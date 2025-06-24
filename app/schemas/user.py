@@ -3,12 +3,13 @@ from pydantic import BaseModel, EmailStr
 class UserBase(BaseModel):
     username: str
     email: EmailStr
+    role: str  # Add this line
 
 class UserCreate(UserBase):
-    pass
+    password: str
 
-class UserRead(UserBase):
+class UserResponse(UserBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True

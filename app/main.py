@@ -2,12 +2,17 @@ from fastapi import FastAPI
 
 app = FastAPI()
 from fastapi import FastAPI
-from app.routes import user  # adjust this to your actual path
+from app.routes import user  
+from app.routes import project
+from app.routes import task
+from app.routes import auth_router
 
 app = FastAPI()
 
 app.include_router(user.router)
-
+app.include_router(project.router)
+app.include_router(task.router)
+app.include_router(auth_router.router)
 
 @app.get("/health-check")
 def health_check():

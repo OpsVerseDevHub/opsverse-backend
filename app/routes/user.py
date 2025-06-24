@@ -1,33 +1,34 @@
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from typing import List
+from app.schemas.user import UserCreate, UserResponse
 from models.user import User
-from app.schemas.user import UserCreate, UserRead
-from app.dependencies import get_db
+from app.crud import user as user_crud
+from database import get_db
+from app.auth.dependencies import require_role
 
 router = APIRouter()
 
-@router.get("/users", response_model=list[UserRead])
-def get_users(db: Session = Depends(get_db)):
-    return db.query(User).all()
+@router.post("/users", response_model=UserResponse)
+def create_user(user: UserCreate, db: Session = Depends(get_db)):
+    return user_crud.create_user(db, user)
 
-@router.put("/users/{user_id}", response_model=UserRead)
-def update_user(user_id: int, user: UserCreate, db: Session = Depends(get_db)):
-    db_user = db.query(User).filter(User.id == user_id).first()
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
+@router.get("/users", response_model=List[UserResponse])
+def read_users(
+    skip: int = 0,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin"))
+):
+    return user_crud.get_users(db, skip, limit)
 
-    db_user.username = user.username
-    db_user.email = user.email
-    db.commit()
-    db.refresh(db_user)
-    return db_user
-
-@router.delete("/users/{user_id}")
-def delete_user(user_id: int, db: Session = Depends(get_db)):
-    db_user = db.query(User).filter(User.id == user_id).first()
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    db.delete(db_user)
-    db.commit()
-    return {"detail": "User deleted"}
+@router.get("/users/{user_id}", response_model=UserResponse)
+def read_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin", "manager", "developer"))
+):
+    # Allow users to see their own profile, or admin can see any
+    if current_user.role != "admin" and current_user.id != user_id:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    return user_crud.get_user(db, user_id)
