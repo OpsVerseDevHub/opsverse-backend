@@ -14,3 +14,8 @@ class Task(Base):
 
     assignee = relationship("User", back_populates="tasks")
     project = relationship("Project", back_populates="tasks")
+    github_issue_id = Column(Integer, nullable=True)
+    commit_hash = Column(String, nullable=True)
+
+    project = relationship("Project", back_populates="tasks")
+    assignee = relationship("User", back_populates="tasks")

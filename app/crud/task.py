@@ -60,3 +60,42 @@ def delete_task(db: Session, task_id: int):
     db.delete(db_task)
     db.commit()
     return db_task
+
+def update_task_with_commit(db: Session, commit_message: str, commit_hash: str):
+    """
+    Update task if commit message contains reference to task (e.g. TASK-123)
+    """
+    # Example logic: assume commit message contains TASK-<id>
+    import re
+    match = re.search(r"TASK-(\d+)", commit_message)
+    if not match:
+        return None  # No task ref found
+
+    task_id = int(match.group(1))
+
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        return None  # Task not found
+
+    # Prevent duplicate commit processing (idempotency)
+    if task.commit_hash == commit_hash:
+        return task  # Already synced
+
+    task.commit_hash = commit_hash
+    task.status = "in_progress"  # or "done", based on business rule
+    db.commit()
+    db.refresh(task)
+
+    return task
+
+
+def update_task_status(db: Session, task_id: int, status: str):
+    """
+    Update task status manually or via issue-based event
+    """
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if task:
+        task.status = status
+        db.commit()
+        db.refresh(task)
+    return task
