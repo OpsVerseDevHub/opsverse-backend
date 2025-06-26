@@ -1,16 +1,16 @@
 import re
 from sqlalchemy.orm import Session
 from app.crud import task as task_crud
-from sqlalchemy.orm import Session
 from app.crud.task import update_task_with_commit
-from database import get_db  # Adjust if needed for your project
-from fastapi import Depends
+# from database import get_db  
 from database import SessionLocal
 from typing import Optional
+
 
 def extract_task_id_from_message(message: str) -> Optional[int]:
     match = re.search(r"(?:#|TASK-)(\d+)", message)
     return int(match.group(1)) if match else None
+
 
 async def handle_push(payload: dict, db: Session):
     ref = payload.get("ref")
@@ -35,7 +35,8 @@ async def handle_push(payload: dict, db: Session):
             print("⚠️ No matching task reference found or already synced")
 
     db.close()
-    
+
+
 async def handle_pull_request(payload: dict, db: Session):
     action = payload.get("action")
     pr_number = payload.get("number")

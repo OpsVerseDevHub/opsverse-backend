@@ -28,8 +28,10 @@ def create_task(db: Session, task: TaskCreate):
 def get_tasks(db: Session, skip: int = 0, limit: int = 10):
     return db.query(Task).offset(skip).limit(limit).all()
 
+
 def get_task(db: Session, task_id: int):
     return db.query(Task).filter(Task.id == task_id).first()
+
 
 def update_task(db: Session, task_id: int, updated_task: TaskUpdate):
     task = db.query(Task).filter(Task.id == task_id).first()
@@ -42,7 +44,9 @@ def update_task(db: Session, task_id: int, updated_task: TaskUpdate):
         if not assignee:
             raise HTTPException(status_code=400, detail="Assignee does not exist")
     if updated_task.project_id:
-        project = db.query(Project).filter(Project.id == updated_task.project_id).first()
+        project = (
+            db.query(Project).filter(Project.id == updated_task.project_id).first()
+        )
         if not project:
             raise HTTPException(status_code=400, detail="Project does not exist")
 
@@ -53,6 +57,7 @@ def update_task(db: Session, task_id: int, updated_task: TaskUpdate):
     db.refresh(task)
     return task
 
+
 def delete_task(db: Session, task_id: int):
     db_task = db.query(Task).filter(Task.id == task_id).first()
     if db_task is None:
@@ -61,12 +66,14 @@ def delete_task(db: Session, task_id: int):
     db.commit()
     return db_task
 
+
 def update_task_with_commit(db: Session, commit_message: str, commit_hash: str):
     """
     Update task if commit message contains reference to task (e.g. TASK-123)
     """
     # Example logic: assume commit message contains TASK-<id>
     import re
+
     match = re.search(r"TASK-(\d+)", commit_message)
     if not match:
         return None  # No task ref found

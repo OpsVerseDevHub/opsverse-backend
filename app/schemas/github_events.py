@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 
+
 class GitHubEventLogOut(BaseModel):
     id: int
     event_type: str
@@ -9,4 +10,4 @@ class GitHubEventLogOut(BaseModel):
     received_at: datetime
 
     class Config:
-        from_attributes = True  
+        from_attributes = True

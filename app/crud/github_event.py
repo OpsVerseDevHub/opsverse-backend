@@ -1,8 +1,9 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
+# from sqlalchemy import and_
 from models.github_event import GitHubEvent
 from typing import Optional, List
 from datetime import datetime
+
 
 def get_filtered_events(
     db: Session,
@@ -10,7 +11,7 @@ def get_filtered_events(
     from_date: Optional[datetime] = None,
     to_date: Optional[datetime] = None,
     delivery_id: Optional[str] = None,
-    limit: int = 100
+    limit: int = 100,
 ) -> List[GitHubEvent]:
     query = db.query(GitHubEvent)
 

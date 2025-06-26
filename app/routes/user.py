@@ -9,24 +9,27 @@ from app.auth.dependencies import require_role
 
 router = APIRouter()
 
+
 @router.post("/users", response_model=UserResponse)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     return user_crud.create_user(db, user)
+
 
 @router.get("/users", response_model=List[UserResponse])
 def read_users(
     skip: int = 0,
     limit: int = 10,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role("admin"))
+    current_user: User = Depends(require_role("admin")),
 ):
     return user_crud.get_users(db, skip, limit)
+
 
 @router.get("/users/{user_id}", response_model=UserResponse)
 def read_user(
     user_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role("admin", "manager", "developer"))
+    current_user: User = Depends(require_role("admin", "manager", "developer")),
 ):
     # Allow users to see their own profile, or admin can see any
     if current_user.role != "admin" and current_user.id != user_id:
