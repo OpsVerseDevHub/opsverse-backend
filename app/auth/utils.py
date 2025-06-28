@@ -29,3 +29,4 @@ def verify_github_signature(payload_body: bytes, signature: str) -> bool:
         ).hexdigest()
     )
     return hmac.compare_digest(expected, signature)
+
