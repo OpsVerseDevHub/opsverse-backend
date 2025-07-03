@@ -12,3 +12,5 @@ class SlackMessage(Base):
     timestamp = Column(String)
     received_at = Column(DateTime, default=datetime.utcnow)
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True))
+    thread_ts = Column(String)
