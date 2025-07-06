@@ -10,6 +10,7 @@ from app.crud import slack_crud
 from app.schemas.slack import SlackMappingCreate
 from models.slack_mapping import SlackProjectMap
 from app.utils.slack_verify import verify_slack_signature
+from services import slack_service
 
 router = APIRouter()
 
@@ -50,3 +51,8 @@ def create_slack_mapping(mapping: SlackMappingCreate, db: Session = Depends(get_
 @router.get("/admin/slack/mapping")
 def list_slack_mappings(db: Session = Depends(get_db)):
     return db.query(SlackProjectMap).all()
+
+@router.post("/reply")
+def reply_to_thread(project_id: int, message_text: str, db: Session = Depends(get_db)):
+    slack_service.reply_to_slack_thread(project_id, message_text)
+    return {"status": "Reply sent"}
