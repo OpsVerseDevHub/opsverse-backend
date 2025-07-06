@@ -21,4 +21,5 @@ def send_slack_message(channel: str, text: str, thread_ts: str = None):
         payload["thread_ts"] = thread_ts
 
     response = httpx.post(f"{SLACK_API_URL}/chat.postMessage", headers=headers, json=payload)
+    response.raise_for_status()
     return response.json()
