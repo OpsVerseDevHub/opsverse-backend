@@ -5,7 +5,7 @@ from app.schemas.user import UserCreate, UserResponse
 from models.user import User
 from app.crud import user as user_crud
 from database import get_db
-from app.auth.dependencies import require_role
+from app.auth.dependencies import require_role, get_current_user
 
 router = APIRouter()
 
@@ -23,6 +23,11 @@ def read_users(
     current_user: User = Depends(require_role("admin")),
 ):
     return user_crud.get_users(db, skip, limit)
+
+
+@router.get("/users/me", response_model=UserResponse)
+def read_me(current_user: User = Depends(get_current_user)):
+    return current_user
 
 
 @router.get("/users/{user_id}", response_model=UserResponse)
