@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from app.schemas.task import Task, TaskCreate, TaskUpdate, TaskStatusUpdate
 from app.crud import task as task_crud
 from database import get_db
@@ -23,19 +23,17 @@ def create_task(
 @router.get("/tasks", response_model=List[Task])
 def read_tasks(
     skip: int = 0,
-    limit: int = 10,
+    limit: int = 100,
+    project_id: Optional[int] = Query(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role("admin", "manager", "developer")),
 ):
+    query = db.query(TaskModel)
     if current_user.role == "developer":
-        return (
-            db.query(TaskModel)
-            .filter(TaskModel.assignee_id == current_user.id)
-            .offset(skip)
-            .limit(limit)
-            .all()
-        )
-    return task_crud.get_tasks(db, skip, limit)
+        query = query.filter(TaskModel.assignee_id == current_user.id)
+    if project_id is not None:
+        query = query.filter(TaskModel.project_id == project_id)
+    return query.offset(skip).limit(limit).all()
 
 
 @router.get("/tasks/{task_id}", response_model=Task)
