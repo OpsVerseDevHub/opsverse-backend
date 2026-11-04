@@ -5,6 +5,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes import user, project, task, auth_router, webhook_router, slack_router
 from app.routes.auth_github import router as github_router
+from app.routes.ws_router import router as ws_router
 
 app = FastAPI(title="OpsVerse API", version="2.0.0")
 
@@ -23,6 +24,7 @@ app.include_router(auth_router.router)
 app.include_router(webhook_router.router)
 app.include_router(slack_router.router)
 app.include_router(github_router)
+app.include_router(ws_router)
 
 
 @app.exception_handler(RequestValidationError)

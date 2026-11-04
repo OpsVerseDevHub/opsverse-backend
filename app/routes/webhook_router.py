@@ -13,6 +13,7 @@ from models.github_event import GitHubEvent
 from datetime import datetime
 from typing import Optional, List
 from app.auth.dependencies import require_role
+from app.websocket.manager import manager
 from models.user import User
 
 load_dotenv()
@@ -94,6 +95,8 @@ async def github_webhook(
 
     payload = await request.json()
     await dispatch_event(x_github_event, payload, db)
+    repo = payload.get("repository", {}).get("full_name", "unknown")
+    await manager.broadcast({"type": "github_event", "event_type": x_github_event, "repo": repo})
     return {"message": "Webhook received"}
 
 
