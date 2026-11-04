@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from app.schemas.task import Task, TaskCreate, TaskUpdate
+from app.schemas.task import Task, TaskCreate, TaskUpdate, TaskStatusUpdate
 from app.crud import task as task_crud
 from database import get_db
 from app.auth.dependencies import require_role
 from models.user import User
+from models.task import Task as TaskModel
 
 router = APIRouter()
 
@@ -28,8 +29,8 @@ def read_tasks(
 ):
     if current_user.role == "developer":
         return (
-            db.query(Task)
-            .filter(Task.assignee_id == current_user.id)
+            db.query(TaskModel)
+            .filter(TaskModel.assignee_id == current_user.id)
             .offset(skip)
             .limit(limit)
             .all()
@@ -59,10 +60,26 @@ def update_task(
     return task_crud.update_task(db, task_id, task)
 
 
+@router.patch("/tasks/{task_id}/status", response_model=Task)
+def update_task_status(
+    task_id: int,
+    body: TaskStatusUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin", "manager", "developer")),
+):
+    task = task_crud.update_task_status(db, task_id, body.status)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return task
+
+
 @router.delete("/tasks/{task_id}", response_model=Task)
 def delete_task(
     task_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role("admin", "manager")),
 ):
-    return task_crud.delete_task(db, task_id)
+    task = task_crud.delete_task(db, task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return task

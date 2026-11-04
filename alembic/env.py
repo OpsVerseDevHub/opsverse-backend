@@ -2,10 +2,9 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 
-from database import Base  # ✅ correct import
-# Import all models to ensure they are registered with Base.metadata
-from models import user, project, task  # adjust based on your actual model files
-target_metadata = Base.metadata  # ✅ your models' metadata
+from database import Base
+import models  # noqa: F401 — registers all models with Base.metadata
+target_metadata = Base.metadata
 
 config = context.config
 
