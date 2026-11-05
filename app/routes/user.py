@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from typing import List
 from app.schemas.user import UserCreate, UserResponse
 from models.user import User
@@ -12,7 +13,15 @@ router = APIRouter()
 
 @router.post("/users", response_model=UserResponse)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
-    return user_crud.create_user(db, user)
+    try:
+        # First user ever gets admin role regardless of what was sent
+        is_first = db.query(User).count() == 0
+        if is_first:
+            user = user.model_copy(update={"role": "admin"})
+        return user_crud.create_user(db, user)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="Username or email already taken")
 
 
 @router.get("/users", response_model=List[UserResponse])
