@@ -118,9 +118,11 @@ def stream_copilot_response(
                 if resp.status_code != 200:
                     err = resp.read().decode()
                     if "model" in err.lower() and ("not found" in err.lower() or "pull" in err.lower()):
-                        yield f"data: {json.dumps({'type': 'error', 'text': f'Model \"{OLLAMA_MODEL}\" not found. Run: ollama pull {OLLAMA_MODEL}'})}\n\n"
+                        msg = f'Model "{OLLAMA_MODEL}" not found. Run: ollama pull {OLLAMA_MODEL}'
+                        yield f"data: {json.dumps({'type': 'error', 'text': msg})}\n\n"
                     else:
-                        yield f"data: {json.dumps({'type': 'error', 'text': f'Ollama error {resp.status_code}: {err[:200]}'})}\n\n"
+                        msg = f"Ollama error {resp.status_code}: {err[:200]}"
+                        yield f"data: {json.dumps({'type': 'error', 'text': msg})}\n\n"
                     return
 
                 for line in resp.iter_lines():
