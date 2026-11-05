@@ -12,3 +12,4 @@ celery==5.4.0
 redis==5.2.1
 pydantic[email]==2.11.4
 anthropic>=0.40.0
+# ^ kept as fallback; primary copilot runs via Ollama (no extra dep — uses httpx already above)
